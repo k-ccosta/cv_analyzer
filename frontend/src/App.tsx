@@ -1,12 +1,9 @@
+// src/App.tsx
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/Login";
 import DashboardPage from "./pages/Dashboard";
-import { AuthProvider, useAuth } from "./context/AuthContext";
-
-function PrivateRoute({ children }: { children: JSX.Element }) {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/login" />;
-}
+import { AuthProvider } from "./context/AuthContext";
+import PrivateRoute from "./components/PrivateRoute"; // agora em um arquivo separado
 
 function App() {
   return (
@@ -22,7 +19,8 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route path="*" element={<Navigate to="/login" />} />
+          {/* Qualquer rota inválida redireciona para login */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </AuthProvider>
