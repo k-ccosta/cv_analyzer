@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import api from "../services/axiosInstance";
 
 interface AuthContextType {
   user: string | null;
@@ -12,26 +12,33 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
-    if (savedUser) setUser(savedUser);
+    const savedToken = localStorage.getItem("token");
+    if (savedUser && savedToken) {
+      setUser(savedUser);
+      setToken(savedToken);
+    }
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post("http://localhost:8000/api/login/", {
+      const response = await api.post("login/", {  // <-- usa o axiosInstance aqui
         email,
         password,
       });
 
-      const token = response.data.access;
+      const access = response.data.access;
       const refresh = response.data.refresh;
 
-      localStorage.setItem("token", token);
+      localStorage.setItem("token", access);
       localStorage.setItem("refresh", refresh);
       localStorage.setItem("user", email);
+
       setUser(email);
+      setToken(access);
       return true;
     } catch (err) {
       console.error("Login failed:", err);
@@ -42,10 +49,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     localStorage.clear();
     setUser(null);
+    setToken(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+        isAuthenticated: !!user && !!token,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

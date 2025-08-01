@@ -11,11 +11,14 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
 
+
 class UserInfoView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
+        user = request.user
         return Response({
-            "id": request.user.id,
-            "email": request.user.email,
+            "id": user.id,
+            "email": user.email,
+            # "username": user.username,
         })
